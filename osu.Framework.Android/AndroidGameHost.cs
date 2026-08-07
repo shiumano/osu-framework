@@ -17,6 +17,7 @@ using osu.Framework.Graphics.Video;
 using osu.Framework.IO.Stores;
 using osu.Framework.Logging;
 using osu.Framework.Platform;
+using osu.Framework.Platform.SDL3;
 using Stream = System.IO.Stream;
 using Uri = Android.Net.Uri;
 
@@ -46,6 +47,14 @@ namespace osu.Framework.Android
         {
             if (AndroidGameActivity.Surface.IsSurfaceReady)
                 base.DrawFrame();
+        }
+
+        protected override void Swap()
+        {
+            if (Window.GraphicsSurface is SDL3GraphicsSurface graphicsSurface)
+                graphicsSurface.SetPresentationTimeAndroid();
+
+            base.Swap();
         }
 
         public override bool CanExit => false;

@@ -206,6 +206,56 @@ namespace osu.Framework.Platform.SDL3
         [SupportedOSPlatform("android")]
         IntPtr IAndroidGraphicsSurface.SurfaceHandle => window.SurfaceHandle;
 
+        [SupportedOSPlatform("android")]
+        public void SetPresentationTimeAndroid()
+        {
+            IntPtr sdlEglDisplay = SDL_EGL_GetCurrentDisplay();
+            IntPtr sdlEglSurface = getCurrentDrawSurface();
+
+            if (sdlEglDisplay == IntPtr.Zero || sdlEglSurface == IntPtr.Zero) return;
+
+            long nowNanos = TimeProvider.System.GetTimestamp();  // Same value as clock_gettime(CLOCK_MONOTONIC, &tp)
+
+            setPresentationTime(sdlEglDisplay, sdlEglSurface, nowNanos);
+        }
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate IntPtr eglGetCurrentSurfaceDelegate(int readdraw);
+        private static eglGetCurrentSurfaceDelegate? eglGetCurrentSurface;
+
+        private static IntPtr getCurrentDrawSurface()
+        {
+            const int egl_draw = 0x3059;
+            if (eglGetCurrentSurface == null)
+            {
+                IntPtr proc = SDL_GL_GetProcAddress("eglGetCurrentSurface");
+                if (proc != IntPtr.Zero)
+                {
+                    eglGetCurrentSurface = Marshal.GetDelegateForFunctionPointer<eglGetCurrentSurfaceDelegate>(proc);
+                }
+            }
+
+            return eglGetCurrentSurface?.Invoke(egl_draw) ?? IntPtr.Zero;
+        }
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate bool eglPresentationTimeANDROIDDelegate(IntPtr dpy, IntPtr surface, long time);
+        private static eglPresentationTimeANDROIDDelegate? eglPresentationTimeANDROID;
+
+        private static bool setPresentationTime(IntPtr eglDisplay, IntPtr eglSurface, long presentationTimeNanos)
+        {
+            if (eglPresentationTimeANDROID == null)
+            {
+                IntPtr proc = SDL_GL_GetProcAddress("eglPresentationTimeANDROID");
+                if (proc != IntPtr.Zero)
+                {
+                    eglPresentationTimeANDROID = Marshal.GetDelegateForFunctionPointer<eglPresentationTimeANDROIDDelegate>(proc);
+                }
+            }
+
+            return eglPresentationTimeANDROID?.Invoke(eglDisplay, eglSurface, presentationTimeNanos) ?? false;
+        }
+
         #endregion
     }
 }
