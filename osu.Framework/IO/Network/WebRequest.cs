@@ -138,9 +138,9 @@ namespace osu.Framework.IO.Network
         private bool completed;
 
         private static readonly HttpClient client = new HttpClient(
-            // SocketsHttpHandler causes crash in Android Debug, and seems to have compatibility issue on SSL
+            // SocketsHttpHandler seems to have SSL compatibility issue on Android versions below 10.
             // Use platform HTTP handler which is invoked by HttpClientHandler for better compatibility and app size
-            RuntimeInfo.OS == RuntimeInfo.Platform.Android
+            RuntimeInfo.OS == RuntimeInfo.Platform.Android && !OperatingSystem.IsAndroidVersionAtLeast(29)
                 ? new HttpClientHandler
                 {
                     Credentials = CredentialCache.DefaultCredentials,
