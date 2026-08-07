@@ -697,7 +697,7 @@ namespace osu.Framework.Platform
                 Environment.FailFast($"{nameof(GameHost)}s should not be run on a TPL thread (use TaskCreationOptions.LongRunning).");
             }
 
-            if (RuntimeInfo.IsDesktop)
+            if (RuntimeInfo.IsCoreCLR)
             {
                 // Mono (netcore) throws for this property
                 GCSettings.LatencyMode = GCLatencyMode.SustainedLowLatency;
