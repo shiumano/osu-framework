@@ -46,6 +46,9 @@ namespace osu.Framework
         public static bool IsMobile => OS == Platform.iOS || OS == Platform.Android;
         public static bool IsApple => OS == Platform.iOS || OS == Platform.macOS;
 
+        // I'm not sure if it works on iOS.
+        public static bool IsCoreCLR => typeof(object).Assembly.GetType("Mono.Runtime") == null && typeof(object).Assembly.GetType("Mono.ValueTuple") == null;
+
         static RuntimeInfo()
         {
             if (OperatingSystem.IsWindows())
