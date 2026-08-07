@@ -164,7 +164,7 @@ namespace osu.Framework.Android
         }
 
         public override IResourceStore<TextureUpload> CreateTextureLoaderStore(IResourceStore<byte[]> underlyingStore)
-            => new AndroidTextureLoaderStore(underlyingStore);
+            => RuntimeInfo.IsCoreCLR ? base.CreateTextureLoaderStore(underlyingStore) : new AndroidTextureLoaderStore(underlyingStore);
 
         public override VideoDecoder CreateVideoDecoder(Stream stream)
             => new AndroidVideoDecoder(Renderer, stream);
