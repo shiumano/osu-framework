@@ -207,16 +207,14 @@ namespace osu.Framework.Platform.SDL3
         IntPtr IAndroidGraphicsSurface.SurfaceHandle => window.SurfaceHandle;
 
         [SupportedOSPlatform("android")]
-        public void SetPresentationTimeAndroid()
+        public void SetPresentationTimeAndroid(long presentationTimeNanos)
         {
             IntPtr sdlEglDisplay = SDL_EGL_GetCurrentDisplay();
             IntPtr sdlEglSurface = getCurrentDrawSurface();
 
             if (sdlEglDisplay == IntPtr.Zero || sdlEglSurface == IntPtr.Zero) return;
 
-            long nowNanos = TimeProvider.System.GetTimestamp();  // Same value as clock_gettime(CLOCK_MONOTONIC, &tp)
-
-            setPresentationTime(sdlEglDisplay, sdlEglSurface, nowNanos);
+            setPresentationTime(sdlEglDisplay, sdlEglSurface, presentationTimeNanos);
         }
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]

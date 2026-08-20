@@ -52,7 +52,14 @@ namespace osu.Framework.Android
         protected override void Swap()
         {
             if (Window.GraphicsSurface is SDL3GraphicsSurface graphicsSurface)
-                graphicsSurface.SetPresentationTimeAndroid();
+            {
+                // https://registry.khronos.org/EGL/extensions/ANDROID/EGL_ANDROID_presentation_time.txt#:~:text=2%2E%20How%20can%20the%20current%20value%20of%20the%20clock
+                // long nowNanoTime = Java.Lang.JavaSystem.NanoTime();
+
+                long nowNanoTime = (long)SDL.SDL3.SDL_GetPerformanceCounter();
+
+                graphicsSurface.SetPresentationTimeAndroid(nowNanoTime);
+            }
 
             base.Swap();
         }
