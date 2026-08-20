@@ -226,7 +226,7 @@ namespace osu.Framework.Platform.SDL3
             const int egl_draw = 0x3059;
             if (eglGetCurrentSurface == null)
             {
-                IntPtr proc = SDL_GL_GetProcAddress("eglGetCurrentSurface");
+                IntPtr proc = SDL_EGL_GetProcAddress("eglGetCurrentSurface");
                 if (proc != IntPtr.Zero)
                 {
                     eglGetCurrentSurface = Marshal.GetDelegateForFunctionPointer<eglGetCurrentSurfaceDelegate>(proc);
