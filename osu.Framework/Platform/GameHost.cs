@@ -579,7 +579,7 @@ namespace osu.Framework.Platform
         {
             Renderer.SwapBuffers();
 
-            if (Window.GraphicsSurface.Type == GraphicsSurfaceType.OpenGL && Renderer.VerticalSync)
+            if (Window.GraphicsSurface.Type == GraphicsSurfaceType.OpenGL && Renderer.VerticalSync && RuntimeInfo.OS != RuntimeInfo.Platform.Android)
                 // without waiting (i.e. glFinish), vsync is basically unplayable due to the extra latency introduced.
                 // we will likely want to give the user control over this in the future as an advanced setting.
                 Renderer.WaitUntilIdle();
@@ -697,7 +697,7 @@ namespace osu.Framework.Platform
                 Environment.FailFast($"{nameof(GameHost)}s should not be run on a TPL thread (use TaskCreationOptions.LongRunning).");
             }
 
-            if (RuntimeInfo.IsDesktop)
+            if (RuntimeInfo.IsCoreCLR)
             {
                 // Mono (netcore) throws for this property
                 GCSettings.LatencyMode = GCLatencyMode.SustainedLowLatency;
