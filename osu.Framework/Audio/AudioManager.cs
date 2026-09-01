@@ -106,6 +106,14 @@ namespace osu.Framework.Audio
         public readonly BindableBool UseExperimentalWasapi = new BindableBool();
 
         /// <summary>
+        /// Whether to use experimental AAudio exclusive mode initialisation on android.
+        /// This generally results in lower audio latency, but also changes the audio synchronisation from
+        /// historical expectations, meaning users / application will have to account for different offsets.
+        /// Additionally, because it bypasses the OS's audio mixer (AudioFlinger), there will be no sound in the screen recording.
+        /// </summary>
+        public readonly BindableBool UseExperimentalAAudioMmap = new BindableBool();
+
+        /// <summary>
         /// Volume of all samples played game-wide.
         /// </summary>
         public readonly BindableDouble VolumeSample = new BindableDouble(1)
@@ -190,6 +198,7 @@ namespace osu.Framework.Audio
                 // attach config bindables
                 config.BindWith(FrameworkSetting.AudioDevice, AudioDevice);
                 config.BindWith(FrameworkSetting.AudioUseExperimentalWasapi, UseExperimentalWasapi);
+                config.BindWith(FrameworkSetting.AudioUseExperimentalAAudioMmap, UseExperimentalAAudioMmap);
                 config.BindWith(FrameworkSetting.VolumeUniversal, Volume);
                 config.BindWith(FrameworkSetting.VolumeEffect, VolumeSample);
                 config.BindWith(FrameworkSetting.VolumeMusic, VolumeTrack);
@@ -197,6 +206,7 @@ namespace osu.Framework.Audio
 
             AudioDevice.ValueChanged += _ => scheduler.AddOnce(initCurrentDevice);
             UseExperimentalWasapi.ValueChanged += _ => scheduler.AddOnce(initCurrentDevice);
+            UseExperimentalAAudioMmap.ValueChanged += _ => scheduler.AddOnce(initCurrentDevice);
             // initCurrentDevice not required for changes to `GlobalMixerHandle` as it is only changed when experimental wasapi is toggled (handled above).
             GlobalMixerHandle.ValueChanged += handle => usingGlobalMixer.Value = handle.NewValue.HasValue;
 
@@ -427,6 +437,10 @@ namespace osu.Framework.Audio
             // Disable BASS_CONFIG_DEV_TIMEOUT flag to keep BASS audio output from pausing on device processing timeout.
             // See https://www.un4seen.com/forum/?topic=19601 for more information.
             Bass.Configure((ManagedBass.Configuration)70, false);
+
+            // A value of 0 means automatic assignment of a session ID, and -1 means not setting one.
+            // If a session ID is not set, AAudio will enter MMAP mode and bypass the OS mixer.
+            Bass.Configure(ManagedBass.Configuration.AndroidSessionId, UseExperimentalAAudioMmap.Value ? -1 : 0);
 
             bool success = attemptInit();
 
